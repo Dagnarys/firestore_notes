@@ -50,7 +50,34 @@ class _HomePageState extends State<HomePage> {
       )
     );
   }
-
+  void openNote(String docID, BuildContext context){
+    firestoreService.getNoteStream(docID).listen((noteSnapshot){
+      if (noteSnapshot.exists){
+        Map<String, dynamic> noteData = noteSnapshot.data() as Map<String, dynamic>;
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Note Details'),
+              content: Row(
+                children: [
+                  Text(noteData['note']),
+                  SizedBox(width: 10,),
+                  if (noteData['name']!=null)
+                    Text(noteData['name'])
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          
+      });
+    }});
+  } 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,8 +105,10 @@ class _HomePageState extends State<HomePage> {
               //get note from each doc
               Map<String,dynamic> data = document.data() as Map<String,dynamic>;
               String noteText = data['note'];
+
               //display as list tile
               return ListTile(
+                onTap: () => openNote(docID, context),
                 title: Text(noteText),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -98,9 +127,7 @@ class _HomePageState extends State<HomePage> {
               );
             }
             );
-          }
-          
-         
+          }     
           //if there is no data
           else {
             return const Text('No notes');
